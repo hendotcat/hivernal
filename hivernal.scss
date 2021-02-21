@@ -1,0 +1,200 @@
+@use "sass:map";
+@use "sass:math";
+
+$treeAngles: (
+  0.458,
+  0.45,
+);
+
+$treeFrames: ();
+
+$treeDuration: math.pow(2, 11) * 1ms;
+
+$snowQueue: (
+  30%,
+  60%,
+  50%,
+  20%,
+  40%,
+  90%,
+);
+
+$snowDuration: $treeDuration * 2 * length($snowQueue);
+
+$snowOffsets: (
+    0%: 0%,
+   20%: 0%,
+   35%: -5%,
+   40%: -6%,
+   45%: -7%,
+   50%: -8%,
+   99%: -4%,
+);
+
+$snowFrames: (
+  100%: circle(0% at 0% 200%),
+);
+
+@function M($x, $y) {
+  @return (#{($x/128)*100%} #{($y/128)*100%});
+}
+
+@function L($x, $y) {
+  @return (#{($x/128)*100%} #{($y/128)*100%});
+}
+
+@function tree($x1, $y1, $x2, $y2, $l, $d: 0, $r: 0.5) {
+  $t: ();
+
+  @if $d == $l {
+    @return $t;
+  }
+
+  $dx: $x2 - $x1;
+  $dy: $y1 - $y2;
+  $x3: $x2 - $dy;
+  $y3: $y2 - $dx;
+  $x4: $x1 - $dy;
+  $y4: $y1 - $dx;
+  $x5: $x4 + $r * ($dx - $dy);
+  $y5: $y4 - $r * ($dx + $dy);
+
+  @if $d == 0 {
+    $t: append($t, M($x4, $y4), $separator: comma);
+    $t: append($t, L($x1, $y1), $separator: comma);
+    $t: append($t, L($x2, $y2), $separator: comma);
+    $t: append($t, L($x3, $y3), $separator: comma);
+    $t: join($t, tree($x5, $y5, $x3, $y3, $l, $d+1, $r));
+    $t: join($t, tree($x4, $y4, $x5, $y5, $l, $d+1, $r));
+  }
+
+  @if $d < $l - 1 {
+    $t: append($t, L($x2, $y2), $separator: comma);
+    $t: append($t, L($x3, $y3), $separator: comma);
+    $t: join($t, tree($x5, $y5, $x3, $y3, $l, $d+1, $r));
+    $t: join($t, tree($x4, $y4, $x5, $y5, $l, $d+1, $r));
+    $t: append($t, L($x4, $y4), $separator: comma);
+    $t: append($t, L($x1, $y1), $separator: comma);
+  }
+
+  @if $d == $l - 1 {
+    $t: append($t, L($x2, $y2), $separator: comma);
+    $t: append($t, L($x3, $y3), $separator: comma);
+    $t: append($t, L($x4, $y4), $separator: comma);
+    $t: append($t, L($x1, $y1), $separator: comma);
+  }
+
+  @return $t;
+}
+
+
+@for $i from 1 through length($snowQueue) {
+  $x: nth($snowQueue, $i);
+  @each $y, $d in $snowOffsets {
+    $snowSize: 0.5%;
+    @if $y == 0% or $y == 99% {
+      $snowSize: 0%;
+    }
+    $snowFrames: map.set(
+      $snowFrames, 
+      ($y / length($snowQueue)) + (($i - 1) * (100% / length($snowQueue))),
+      circle($snowSize at #{$x + $d} $y)
+    );
+  }
+}
+
+@for $i from 1 through length($treeAngles) {
+  $r: nth($treeAngles, $i);
+
+  $treeFrames: map.set(
+    $treeFrames,
+    (100/(length($treeAngles) - 1))*($i - 1)*1%,
+    tree(
+      64-8, 128-32,
+      64+8, 128-32,
+      8, 0,
+      $r: $r
+    )
+  );
+}
+
+@debug $treeFrames;
+
+@keyframes snow {
+  @each $percent, $circle in $snowFrames {
+    #{$percent} {
+      clip-path: $circle;
+    }
+  }
+}
+
+@keyframes tree {
+  @each $percent, $polygon in $treeFrames {
+    #{$percent} {
+      clip-path: polygon($polygon);
+    }
+  }
+}
+
+:root {
+  --size: 100vmin;
+  --snow: snow;
+  --tree: saddlebrown;
+}
+
+@media (min-width: 512px) and (min-height: 512px) {
+  :root {
+    --size: 80vmin;
+  }
+}
+
+html {
+  background: #111;
+}
+
+body {
+  background: linear-gradient(
+    180deg,
+    black 73%,
+    var(--snow) 51%
+  );
+  margin: 0;
+  height: var(--size);
+  width: var(--size);
+  overflow: hidden;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  left: 50%;
+}
+
+body:after {
+  background-color: var(--snow);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  content: "";
+  animation-name: snow;
+  animation-duration: $snowDuration;
+  animation-direction: normal;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+body:before {
+  background-color: var(--tree);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  content: "";
+  animation-name: tree;
+  animation-duration: $treeDuration;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
