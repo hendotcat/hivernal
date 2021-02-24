@@ -118,8 +118,6 @@ $snowFrames: (
   );
 }
 
-@debug $treeFrames;
-
 @keyframes snow {
   @each $percent, $circle in $snowFrames {
     #{$percent} {

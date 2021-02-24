@@ -1,16 +1,27 @@
 {
   "name": "@hendotcat/hivernal",
-  "devDependencies": {
-    "@11ty/eleventy": "^0.11.0",
-    "chokidar": "^3.4.3",
-    "dotenv": "^8.2.0",
-    "fs-extra": "^9.0.1",
-    "html-minifier": "^4.0.0",
-    "jsdom": "^16.4.0",
-    "sass": "^1.27.0"
+  "main": "hivernal.scss",
+  "homepage": "https://hen.cat/hivernal/",
+  "description": "Winter scene in pure CSS",
+  "license": "CC0-1.0",
+  "author": {
+    "name": "Henry Catalini Smith",
+    "email": "hen@hey.com",
+    "url": "https://hen.cat/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hendotcat/hivernal.git"
+  },
+  "files": [
+    "opengraph-1200x630.png",
+    "demo-512x512.mp4"
+  ],
+  "dependencies": {
+    "@hendotcat/zoetrope": "^0.0.1"
   },
   "scripts": {
-    "build": "eleventy",
-    "start": "eleventy --serve"
+    "build": "zoetrope",
+    "start": "zoetrope --serve"
   }
 }
