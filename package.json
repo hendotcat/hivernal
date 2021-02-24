@@ -18,7 +18,7 @@
     "demo-512x512.mp4"
   ],
   "dependencies": {
-    "@hendotcat/zoetrope": "^0.0.1"
+    "@hendotcat/zoetrope": "latest"
   },
   "scripts": {
     "build": "zoetrope",
